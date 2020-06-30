@@ -1,12 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GManager : MonoBehaviour {
     #region ステート
     enum State
     {
         FirstCheck = 1,
+
+        Secondque,
 
         Night,
 
@@ -42,6 +45,15 @@ public class GManager : MonoBehaviour {
 
     private Selector selectorscript;
 
+    public GameObject prefabP;
+
+    private GameObject[] Player = new GameObject[7];
+
+    public GameObject CheckPanel;
+
+    public Text firsttext;
+
+
     #endregion
 
     #region 変数
@@ -50,6 +62,10 @@ public class GManager : MonoBehaviour {
 
 
     private int[] chara = new int[6];
+
+    private int checkcount = 1;
+
+    private bool fcheck = false;
 
 
 
@@ -74,6 +90,10 @@ public class GManager : MonoBehaviour {
             case State.FirstCheck:
                 firstcheck();
 
+                break;
+
+            case State.Secondque:
+                secondque();
                 break;
 
             case State.Night:
@@ -110,6 +130,7 @@ public class GManager : MonoBehaviour {
         chara[(int)Chara.Werewolf] = selectorscript.WE();
         chara[(int)Chara.Madman] = selectorscript.MA();
 
+        int playernumber = 0;
 
         for (int i = 0; i < selectorscript.PlayerNUM(); i++)
         {
@@ -128,12 +149,21 @@ public class GManager : MonoBehaviour {
             chara[who]--;
 
             //インスタンス作成処理
+                    playernumber++;
+                    GameObject InstanceP = (GameObject)Instantiate(prefabP, new Vector3(0,0,0), Quaternion.identity);
+                    Player player = InstanceP.GetComponent<Player>();
+                    player.CreatePlayer(who,playernumber);
+
+            Player[i+1] = InstanceP;
+                    
+
 
 
 
         }
 
-        game = State.Night;
+        CheckPanel.SetActive(true);
+        game = State.Secondque;
 
 
     }
@@ -141,10 +171,33 @@ public class GManager : MonoBehaviour {
     private int DecideRandom()
     {
         int n;
-        n = Random.Range(1, 5);
+        n = Random.Range(0, 6);
 
 
         return n;
+
+    }
+
+    private void secondque()
+    {
+        int count = checkcount;
+        count = Mathf.Min(count, selectorscript.PlayerNUM());
+
+        Player player = Player[count].GetComponent<Player>();
+
+
+        if(!fcheck)
+        {
+
+            firsttext.text = "あたなは　" + player.pname + "ですか？";
+
+
+        }else{
+            firsttext.text = "あたなは　" + player.wname + "です。";
+
+        }
+
+
 
     }
 
@@ -165,6 +218,31 @@ public class GManager : MonoBehaviour {
 
     private void end()
     {
+
+    }
+
+    public void DisplayChara()
+    {
+
+        if (fcheck)
+        {
+            fcheck = false;
+
+            checkcount++;
+
+            if (checkcount > selectorscript.PlayerNUM())
+            {
+                CheckPanel.SetActive(false);
+                game = State.Night;
+            }
+
+        }
+        else
+        {
+            fcheck = true;
+
+        }
+
 
     }
 
